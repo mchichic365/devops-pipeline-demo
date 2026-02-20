@@ -1,0 +1,36 @@
+# Default values - override per environment
+replicaCount: 3
+
+image:
+  repository: ghcr.io/mchichic365/weather-api
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  host: weather-api.example.com
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUPercent: 70
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  path: /metrics

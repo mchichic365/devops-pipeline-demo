@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "weather-api"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["weather-api:8080"]
+        labels:
+          app: weather-api
+          environment: dev

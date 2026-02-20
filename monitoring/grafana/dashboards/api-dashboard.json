@@ -1,0 +1,52 @@
+{
+  "dashboard": {
+    "title": "Weather API - DevOps Dashboard",
+    "panels": [
+      {
+        "title": "Total Requests",
+        "type": "stat",
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+        "targets": [{
+          "expr": "app_requests_total",
+          "datasource": "Prometheus"
+        }],
+        "fieldConfig": {
+          "defaults": { "color": { "mode": "thresholds" },
+            "thresholds": { "steps": [
+              { "color": "green", "value": null }
+            ]}
+          }
+        }
+      },
+      {
+        "title": "Uptime (seconds)",
+        "type": "stat",
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+        "targets": [{
+          "expr": "app_uptime_seconds",
+          "datasource": "Prometheus"
+        }]
+      },
+      {
+        "title": "Memory Usage (bytes)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+        "targets": [{
+          "expr": "app_memory_bytes",
+          "datasource": "Prometheus"
+        }]
+      },
+      {
+        "title": "Request Rate (per second)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+        "targets": [{
+          "expr": "rate(app_requests_total[1m])",
+          "datasource": "Prometheus"
+        }]
+      }
+    ],
+    "schemaVersion": 38,
+    "version": 1
+  }
+}

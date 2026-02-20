@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+
+  # Your application
+  weather-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_VERSION=1.0.0
+    networks:
+      - monitoring
+
+  # Prometheus - metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring
+
+  # Grafana - dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/api-dashboard.json
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+  # OpenSearch - log aggregation (Elastic Search compatible)
+  opensearch:
+    image: opensearchproject/opensearch:2
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    networks:
+      - monitoring
+
+  # OpenSearch Dashboards (Kibana equivalent)
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2
+    ports:
+      - "5601:5601"
+    environment:
+      - OPENSEARCH_HOSTS=http://opensearch:9200
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    depends_on:
+      - opensearch
+    networks:
+      - monitoring
+
+  # Fluent Bit - log shipping
+  fluent-bit:
+    image: fluent/fluent-bit:latest
+    volumes:
+      - ./monitoring/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    depends_on:
+      - opensearch
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
